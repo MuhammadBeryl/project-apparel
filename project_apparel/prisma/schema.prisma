@@ -1,0 +1,84 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+enum status {
+  Pending
+  Shipped 
+  Delivered
+}
+model Admin {
+  id_admin              Int      @id @default(autoincrement())
+  username_admin        String   @unique
+  password_hash_admin   String   @default("")
+  email_admin           String   @unique @default("")
+  address_admin         String?
+  phone_number_admin    String?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+model User {
+  id_users              Int      @id @default(autoincrement())
+  username_users        String   @unique 
+  password_hash_users   String   @default("")
+  email_users           String   @unique @default("")
+  address_users         String?
+  phone_number_users    String?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  Order            Order[]
+}
+model Categories {
+  id_category           Int      @id @default(autoincrement())
+  name_category         String   @unique
+  description_category  String?
+
+  Product          Product[]
+}
+model Product {
+  id_product              Int      @id @default(autoincrement())
+  name_product            String   @default("")
+  id_category             Int
+  price_product           Int      @default(0)
+  description_product     String?
+  stock_quantity_product  Int      @default(0)
+  image_product           String?
+  
+  Categories       Categories @relation(fields: [id_category], references: [id_category])
+  Order_items      Order_items[]
+}
+model Order {
+  id_order                Int      @id @default(autoincrement())
+  id_users                Int
+  date_order              DateTime @default(now())
+  total_amount_order      Int      @default(0)
+  status_order            status   @default(Pending)
+  shipping_address_order  String?  @default("")
+  payment_method_order    String   @default("")
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+
+  User             User     @relation(fields: [id_users], references: [id_users])
+  Order_items      Order_items[]
+}
+model Order_items {
+  id_order_items   Int      @id @default(autoincrement())
+  id_order         Int
+  id_product       Int
+  quantity         Int      @default(0)
+  sub_total        Int      @default(0)
+
+  Order            Order    @relation(fields: [id_order], references: [id_order])
+  Product          Product  @relation(fields: [id_product], references: [id_product])
+}
